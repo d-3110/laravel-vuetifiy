@@ -1,0 +1,5 @@
+{
+    "scripts": {
+        "heroku-prebuild": "npm --prefix ./frontend install ./frontend && npm run build --prefix frontend"
+    }
+}

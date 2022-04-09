@@ -1,0 +1,49 @@
+version: '3'
+services:
+    php: 
+        build: ./docker/php
+        volumes:
+            - ./:/app:cached
+        restart: always
+        tty: true
+        networks:
+            - default
+
+    nginx:
+        build: ./docker/nginx
+        ports:
+            - "${DOCKER_PUBLIC_IP-0.0.0.0}:60080:80"
+        volumes:
+            - ./:/app:cached
+        depends_on:
+            - php
+        restart: always
+        networks:
+            - default
+
+    mysql:
+        build: ./docker/mysql
+        ports:
+            - "${DOCKER_PUBLIC_IP-0.0.0.0}:63306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+            MYSQL_DATABASE: ${DB_DATABASE:-lara-vuetify}
+            MYSQL_USER: ${DB_USERNAME:-lara-vuetify}
+            MYSQL_PASSWORD: ${DB_PASSWORD:-lara-vuetify}
+        volumes:
+            - ./docker/mysql/initdb.d:/docker-entrypoint-initdb.d
+            - mysql_keyring:/usr/local/mysql/mysql-keyring
+            - mysql_data:/var/lib/mysql
+        restart: always
+
+    node:
+        build: ./docker/node
+        tty: true
+        volumes:
+            - ./:/app:delegated
+
+volumes:
+    mysql_keyring:
+        driver: local
+    mysql_data:
+        driver: local
